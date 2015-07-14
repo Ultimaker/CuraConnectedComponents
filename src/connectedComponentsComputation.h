@@ -11,7 +11,7 @@
 // namespace CuraConnectedComponents
 //{
 
-struct VertexRaw
+struct VertexRaw // vertex in raw input data
 {
     float* vertices_raw;
     unsigned int idx;
@@ -21,7 +21,7 @@ struct VertexRaw
     bool operator==(const VertexRaw& other) const { return idx == other.idx; }
 };
 
-struct VertexRaw_Hasher
+struct VertexRaw_Hasher // hashing function for vertices (used by unordered map)
 {
     std::size_t operator()(const VertexRaw& vertex) const
     {
@@ -29,7 +29,7 @@ struct VertexRaw_Hasher
     }
 };
 
-struct FaceRaw 
+struct FaceRaw // face in raw input data
 {
     int32_t* faces_raw;
     unsigned int idx;
@@ -41,21 +41,21 @@ struct FaceRaw
 
 
 
-struct Vertex
+struct Vertex // vertex (aslo used in raw output; DON'T add fields! )
 {
     float x,y,z;
     Vertex(float* begin) : x(*begin), y(*(begin+1)), z(*(begin+2)) { }
 //     Vertex(VertexRaw& v) : x(v.getCoord(0)), y(v.getCoord(1)), z(v.getCoord(2)) { }
 };
 
-struct Face
+struct Face // face (also used in raw output; DON'T add fields!)
 {
     int32_t p0, p1, p2;
     Face(int32_t p0, int32_t p1, int32_t p2) : p0(p0), p1(p1), p2(p2) { }
 };
 
 
-class ComponentRaw
+class ComponentRaw // output component
 {
 public:
     const char* verts;
@@ -67,7 +67,7 @@ public:
     ~ComponentRaw() { }
 };
 
-struct Component
+struct Component // component class used during building/computing the connected component
 {
     std::vector<Vertex>* verts;
     std::vector<Face>* faces;
@@ -89,40 +89,40 @@ struct Component
 class ConnectedComponentsComputation 
 {
     
-    float* vertices_raw;
-    unsigned int n_verts;
+    float* vertices_raw; //input
+    unsigned int n_verts; //
     
-    int32_t* faces_raw;
-    unsigned int n_faces;
+    int32_t* faces_raw; // input
+    unsigned int n_faces; //
     
     int* vert_part_idx; // index '-1' is [yet unassigned vert]
     int* face_part_idx; // index '-1' is [yet unassigned face]
 
     
-    std::unordered_multimap<VertexRaw, FaceRaw, VertexRaw_Hasher> vertex2faces;
+    std::unordered_multimap<VertexRaw, FaceRaw, VertexRaw_Hasher> vertex2faces; // maps each vertex to all connected faces
 
     std::vector<Component> result;
     
-    unsigned int lastUnassignedFace;
-    unsigned int lastComponentId;
+    unsigned int lastUnassignedFace; // used during computation 
+    unsigned int lastComponentId; // used during computation 
 
-    void buildMap();
+    void buildMap(); // build vertex2faces
 
-    void findNextUnassignedFace();
+    void findNextUnassignedFace(); // find the index of the next unassigned face (not yet in a component) and set lastUnassignedFace
     
-    void computeComponent(unsigned int face_idx);
+    void computeComponent(unsigned int face_idx); // doa breadth first search over the faces
     
-    int computeComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces);
+    int computeComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces); // compute the connected component and set ConnectedComponentsComputation::result
 public:
         
-    ConnectedComponentsComputation();
+    ConnectedComponentsComputation(); // lil init
     
 //     std::vector<Component> 
-    int compute(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
+    int compute(char* vertices_raw, int n_verts, char* faces_raw, int n_faces); // args are the raw input from python
 
-    ComponentRaw getComponent(int id);
+    ComponentRaw getComponent(int id); // return a component of ConnectedComponentsComputation::result
 
-    void* re() 
+    void* re() // return an array for testing with sip
     {
         int l = 4;
         int * qwe = new int[l];
