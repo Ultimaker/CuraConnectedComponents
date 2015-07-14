@@ -34,6 +34,6 @@ int main(int argc, char **argv)
     };
     
     ConnectedComponentsComputation comp;
-    comp.getComponents(reinterpret_cast<char*>(vertices), 8, reinterpret_cast<char*>(faces), 8);
+    comp.compute(reinterpret_cast<char*>(vertices), 8, reinterpret_cast<char*>(faces), 8);
     
 }

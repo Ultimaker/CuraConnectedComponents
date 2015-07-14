@@ -3,8 +3,10 @@
 
 #include <vector>
 #include <unordered_map>
-#include <sip.h>
+#include <sip.h> // remove this?
 
+#include <iostream> // debug
+#include "debug.h"
 
 // namespace CuraConnectedComponents
 //{
@@ -37,6 +39,8 @@ struct FaceRaw
     bool operator==(const FaceRaw& other) const { return idx == other.idx; }
 };
 
+
+
 struct Vertex
 {
     float x,y,z;
@@ -46,15 +50,41 @@ struct Vertex
 
 struct Face
 {
-    unsigned int p0, p1, p2;
-    Face(unsigned int p0, unsigned int p1, unsigned int p2) : p0(p0), p1(p1), p2(p2) { }
+    int32_t p0, p1, p2;
+    Face(int32_t p0, int32_t p1, int32_t p2) : p0(p0), p1(p1), p2(p2) { }
+};
+
+
+class ComponentRaw
+{
+public:
+    const char* verts;
+    const int n_verts;
+    const char* faces;
+    const int n_faces;
+    ComponentRaw() : verts(nullptr), n_verts(0), faces(nullptr), n_faces(0) { }
+    ComponentRaw(char* verts, int n_verts, char* faces, int n_faces) : verts(verts), n_verts(n_verts), faces(faces), n_faces(n_faces) { }
+    ~ComponentRaw() { }
 };
 
 struct Component
 {
-    std::vector<Vertex> verts;
-    std::vector<Face> faces;
+    std::vector<Vertex>* verts;
+    std::vector<Face>* faces;
+    Component() 
+    {
+        verts = new std::vector<Vertex>;
+        faces = new std::vector<Face>;
+    }
+    ComponentRaw toComponentRaw()
+    {
+        ComponentRaw ret(reinterpret_cast<char*>(&((*verts)[0])), verts->size(), reinterpret_cast<char*>(&((*faces)[0])), faces->size());
+        return ret;
+    }
 };
+
+
+
 
 class ConnectedComponentsComputation 
 {
@@ -71,6 +101,8 @@ class ConnectedComponentsComputation
     
     std::unordered_multimap<VertexRaw, FaceRaw, VertexRaw_Hasher> vertex2faces;
 
+    std::vector<Component> result;
+    
     unsigned int lastUnassignedFace;
     unsigned int lastComponentId;
 
@@ -78,18 +110,26 @@ class ConnectedComponentsComputation
 
     void findNextUnassignedFace();
     
-    void getComponent(unsigned int face_idx);
+    void computeComponent(unsigned int face_idx);
     
-    int getComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces);
+    int computeComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces);
 public:
         
     ConnectedComponentsComputation();
     
 //     std::vector<Component> 
-    int getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
+    int compute(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
 
+    ComponentRaw getComponent(int id);
 
-
+    void* re() 
+    {
+        int l = 4;
+        int * qwe = new int[l];
+        for (int i = 0; i < l; i++)
+            qwe[i] = i;
+        return qwe;
+    }
 };
 
 

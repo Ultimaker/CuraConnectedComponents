@@ -3,6 +3,23 @@
 
 %Module connectedComponentsComputation
 
+class ComponentRaw /NoDefaultCtors/
+{
+%TypeHeaderCode
+#include "connectedComponentsComputation.h"
+%End
+
+public:
+
+    const char* verts;
+    const int n_verts;
+    const char* faces;
+    const int n_faces;
+    
+    ComponentRaw(char* verts, int n_verts, char* faces, int n_faces);
+    
+    ~ComponentRaw();
+};
 
 
 class ConnectedComponentsComputation 
@@ -15,9 +32,11 @@ public:
         
     ConnectedComponentsComputation();
     
-    int getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
+    int compute(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
 
-
+    ComponentRaw getComponent(int id);
+    
+    void* re();
 };
 
 

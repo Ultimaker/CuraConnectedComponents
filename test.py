@@ -1,6 +1,8 @@
 #import word
+#import outputComponent
 import connectedComponentsComputation
 import numpy
+import sip 
 
 #w = word.Word(b"foo")
 
@@ -29,5 +31,37 @@ f = numpy.array([
     ], dtype = numpy.int32)
 
 c = connectedComponentsComputation.ConnectedComponentsComputation()
-# c.getComponents(b'\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0', 4, b'\0\0\x01\0\x02\0\x01\0\x02\0\x03\0\0\0\x01\0\x03\0\0\0\x02\0\x03\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0', 4)
-c.getComponents(v[0:8].tostring(), 8, f[0:8].tostring(), 8);
+c.compute(v[0:8].tostring(), 8, f[0:8].tostring(), 8);
+
+cc = c.getComponent(0);
+
+print(type(cc.verts))
+print(cc.n_verts)
+print(cc.verts)
+
+# v0 = numpy.fromiter(cc.verts , dtype=numpy.float32, count = cc.n_verts)
+#print(v0)
+
+re = c.re().asarray(cc.n_verts)
+#print(dir(re))
+print("forward")
+print(re[0])
+print(re[1])
+print(re[2])
+print(re[3])
+print("backward")
+print(re[0])
+print(re[-1])
+print(re[-2])
+print(re[-3])
+print("sdg")
+print(re.__getitem__(0))
+
+print(sip.ispyowned(cc)) # True
+
+
+
+
+
+
+

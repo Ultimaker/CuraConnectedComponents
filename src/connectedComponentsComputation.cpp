@@ -41,7 +41,7 @@ void ConnectedComponentsComputation::findNextUnassignedFace()
     }
 }
 
-void ConnectedComponentsComputation::getComponent(unsigned int face_idx)
+void ConnectedComponentsComputation::computeComponent(unsigned int face_idx)
 {
     typedef std::unordered_multimap<VertexRaw, FaceRaw, VertexRaw_Hasher>::iterator Vertex2face_it;
     std::queue<FaceRaw> todo; // contains the faces already added to the current connected component, but of which the neighbors are not yet processed
@@ -88,30 +88,27 @@ ConnectedComponentsComputation::ConnectedComponentsComputation()
 { 
 }
 
-int ConnectedComponentsComputation::getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces)
+int ConnectedComponentsComputation::compute(char* vertices_raw, int n_verts, char* faces_raw, int n_faces)
 {
-    return getComponents(reinterpret_cast<float*>(vertices_raw), (unsigned int)n_verts, reinterpret_cast<int32_t*>(faces_raw), (unsigned int)n_faces);
+    return computeComponents(reinterpret_cast<float*>(vertices_raw), (unsigned int)n_verts, reinterpret_cast<int32_t*>(faces_raw), (unsigned int)n_faces);
 }
 
 
 // std::vector<Component> 
-int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces)
+int ConnectedComponentsComputation::computeComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces)
 {
-    DEBUG_PRINTLN("getComponents");
     this->vertices_raw = vertices_raw;
     this->n_verts = n_verts;
     this->faces_raw = faces_raw;
     this->n_faces = n_faces;
  
-    DEBUG_PRINTLN("verts:");
-    for (int v = 0; v<n_verts; v++)
-        DEBUG_PRINTLN(vertices_raw[v*3] << ", " <<vertices_raw[v*3+1] << ", " <<vertices_raw[v*3+2]);
-    DEBUG_PRINTLN("faces:");
-    for (int f = 0; f<n_faces; f++)
-        DEBUG_PRINTLN(faces_raw[f*3] << ", " <<faces_raw[f*3+1] << ", " <<faces_raw[f*3+2]);
+//     DEBUG_PRINTLN("verts:");
+//     for (int v = 0; v<n_verts; v++)
+//         DEBUG_PRINTLN(vertices_raw[v*3] << ", " <<vertices_raw[v*3+1] << ", " <<vertices_raw[v*3+2]);
+//     DEBUG_PRINTLN("faces:");
+//     for (int f = 0; f<n_faces; f++)
+//         DEBUG_PRINTLN(faces_raw[f*3] << ", " <<faces_raw[f*3+1] << ", " <<faces_raw[f*3+2]);
     
-    DEBUG_PRINTLN("");
-    std::vector<Component> result;
     
     vert_part_idx = new int[n_verts];
     fill_array<int>(vert_part_idx, n_verts, -1);
@@ -119,26 +116,19 @@ int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned 
     face_part_idx = new int[n_faces];
     fill_array<int>(face_part_idx, n_faces, -1);
     
-    DEBUG_PRINTLN("");
     buildMap();
-    DEBUG_PRINTLN("");
     
     findNextUnassignedFace();
     
-    DEBUG_PRINTLN("");
-    
     while (lastUnassignedFace < n_faces)
     {
-    DEBUG_PRINTLN("");
-        getComponent(lastUnassignedFace);
-    DEBUG_PRINTLN("");
+        computeComponent(lastUnassignedFace);
         findNextUnassignedFace();
-    DEBUG_PRINTLN("");
     }
     unsigned int n_components = lastComponentId;
     
-    unsigned int new_vert_idx[n_verts];
-    fill_array<unsigned int>(new_vert_idx, n_verts, (unsigned int)0);
+    int32_t new_vert_idx[n_verts];
+    fill_array<int32_t>(new_vert_idx, n_verts, (int32_t)0);
     
     {
         unsigned int comp_vert_count_current[n_components];
@@ -150,23 +140,20 @@ int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned 
         }
     }
     
-    DEBUG_PRINTLN("");
     for (unsigned int comp_id = 0; comp_id < n_components; comp_id++)
     {
         result.emplace_back();
     }
     
-    DEBUG_PRINTLN("");
     for (unsigned int v = 0; v < n_verts; v++)
     {
-        result[vert_part_idx[v]].verts.emplace_back(vertices_raw + v*3);
+        result[vert_part_idx[v]].verts->emplace_back(vertices_raw + v*3);
     }
     
-    DEBUG_PRINTLN("");
     for (unsigned int f = 0; f < n_faces; f++)
     {
         FaceRaw face(faces_raw, f);
-        result[face_part_idx[f]].faces.emplace_back(
+        result[face_part_idx[f]].faces->emplace_back(
                     new_vert_idx[face.vertex_idx(0)]
                 , new_vert_idx[face.vertex_idx(1)]
                 , new_vert_idx[face.vertex_idx(2)]
@@ -175,21 +162,44 @@ int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned 
     
     for (Component& comp : result)
     {
-        DEBUG_PRINTLN("verts:");
-        for (Vertex& v : comp.verts)
-            DEBUG_PRINTLN(v.x << ", " << v.y << ", " << v.z);
-        DEBUG_PRINTLN("faces:");
-        for (Face& f : comp.faces)
-            DEBUG_PRINTLN(f.p0 <<", "<<f.p1<<", "<<f.p2);
+//         DEBUG_PRINTLN("verts:");
+//         for (Vertex& v : *comp.verts)
+//             DEBUG_PRINTLN(v.x << ", " << v.y << ", " << v.z);
+//         DEBUG_PRINTLN("faces:");
+//         for (Face& f : *comp.faces)
+//             DEBUG_PRINTLN(f.p0 <<", "<<f.p1<<", "<<f.p2);
+        
+        ComponentRaw cr = comp.toComponentRaw();
+        DEBUG_PRINTLN("verts RAW:");
+        for (int v = 0; v< cr.n_verts; v++)
+        {
+            const float* vs = reinterpret_cast<const float*>(cr.verts) + v*3 ;
+            DEBUG_PRINTLN(vs[0] << ", " << vs[1] << ", " << vs[2]);
+        }
+        DEBUG_PRINTLN("faces RAW:");
+        for (int v = 0; v< cr.n_faces; v++)
+        {
+            const int* vs = reinterpret_cast<const int*>(cr.faces) + v*3 ;
+            DEBUG_PRINTLN(vs[0] << ", " << vs[1] << ", " << vs[2]);
+        }
     }
-
+    
     delete[] vert_part_idx; 
     delete[] face_part_idx; 
 
-//     return result;
-    return 1;
+    return result.size();
 }
 
+ComponentRaw ConnectedComponentsComputation::getComponent(int id)
+{
+    if (id < 0 || id >= (int)result.size())
+    {
+        ComponentRaw ret;
+        return ret;
+    }
+    ComponentRaw ret = result[id].toComponentRaw();
+    return ret;
+}
 
 
 
