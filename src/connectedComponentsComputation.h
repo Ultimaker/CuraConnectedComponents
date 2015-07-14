@@ -1,12 +1,8 @@
 #ifndef CONNECTED_COMPONENTS_COMPUTATION_H
 #define CONNECTED_COMPONENTS_COMPUTATION_H
 
+#include <vector>
 #include <unordered_map>
-#include <queue>
-#include <algorithm> // array fill
-
-#include <iostream>
-#include "debug.h"
 
 // namespace CuraConnectedComponents
 //{

@@ -8,7 +8,7 @@
 class ConnectedComponentsComputation 
 {
 %TypeHeaderCode
-
+#include <unordered_map>
 %End
    
 public:
