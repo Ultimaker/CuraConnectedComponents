@@ -8,14 +8,14 @@
 class ConnectedComponentsComputation 
 {
 %TypeHeaderCode
-#include <unordered_map>
+#include "connectedComponentsComputation.h"
 %End
    
 public:
         
     ConnectedComponentsComputation();
     
-    int getComponents(float* vertices_raw, unsigned int n_verts, unsigned int* faces_raw, unsigned int n_faces);
+    int getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
 
 
 };

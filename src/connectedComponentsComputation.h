@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <unordered_map>
+#include <sip.h>
+
 
 // namespace CuraConnectedComponents
 //{
@@ -27,10 +29,10 @@ struct VertexRaw_Hasher
 
 struct FaceRaw 
 {
-    unsigned int* faces_raw;
+    int32_t* faces_raw;
     unsigned int idx;
-    unsigned int vertex_idx(uint8_t offset) const { return *(faces_raw + idx*3+offset); }
-    FaceRaw(unsigned int* face_part_idx, unsigned int idx) 
+    int32_t vertex_idx(uint8_t offset) const { return *(faces_raw + idx*3+offset); }
+    FaceRaw(int32_t* face_part_idx, unsigned int idx) 
     : faces_raw(face_part_idx), idx(idx) { }
     bool operator==(const FaceRaw& other) const { return idx == other.idx; }
 };
@@ -60,7 +62,7 @@ class ConnectedComponentsComputation
     float* vertices_raw;
     unsigned int n_verts;
     
-    unsigned int* faces_raw;
+    int32_t* faces_raw;
     unsigned int n_faces;
     
     int* vert_part_idx; // index '-1' is [yet unassigned vert]
@@ -77,12 +79,14 @@ class ConnectedComponentsComputation
     void findNextUnassignedFace();
     
     void getComponent(unsigned int face_idx);
+    
+    int getComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces);
 public:
         
     ConnectedComponentsComputation();
     
 //     std::vector<Component> 
-    int getComponents(float* vertices_raw, unsigned int n_verts, unsigned int* faces_raw, unsigned int n_faces);
+    int getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces);
 
 
 

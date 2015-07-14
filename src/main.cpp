@@ -21,25 +21,19 @@ int main(int argc, char **argv)
         10,11,10,
         10,10,11
     };
-    unsigned int faces[24] =
+    int32_t faces[24] =
     {
-        0,1,2,
-        1,2,3,
-        0,2,3,
-        0,1,3,
-        4,5,6,
-        5,6,7,
-        4,6,7,
-        4,5,7
+        4,6,7, // 2
+        0,1,2, // 1
+        5,6,7, // 2
+        0,2,3, // 1
+        0,1,3, // 1
+        1,2,3, // 1
+        4,5,7, // 2
+        4,5,6  // 2
     };
     
     ConnectedComponentsComputation comp;
-    comp.getComponents(vertices, 8, faces, 8);
-//     std::vector<Component> components = comp.getComponents();
-//     for (Component component : components)
-//     {
-//         std::cerr << " next component " << std::endl;
-//         for (Face face : component.faces)
-//             std::cerr << face.vertex_idx(0) << ", " << face.vertex_idx(1) << ", " << face.vertex_idx(2) << std::endl;
-//     }
+    comp.getComponents(reinterpret_cast<char*>(vertices), 8, reinterpret_cast<char*>(faces), 8);
+    
 }

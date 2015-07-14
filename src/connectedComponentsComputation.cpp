@@ -88,14 +88,29 @@ ConnectedComponentsComputation::ConnectedComponentsComputation()
 { 
 }
 
-// std::vector<Component> 
-int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned int n_verts, unsigned int* faces_raw, unsigned int n_faces)
+int ConnectedComponentsComputation::getComponents(char* vertices_raw, int n_verts, char* faces_raw, int n_faces)
 {
+    return getComponents(reinterpret_cast<float*>(vertices_raw), (unsigned int)n_verts, reinterpret_cast<int32_t*>(faces_raw), (unsigned int)n_faces);
+}
+
+
+// std::vector<Component> 
+int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned int n_verts, int32_t* faces_raw, unsigned int n_faces)
+{
+    DEBUG_PRINTLN("getComponents");
     this->vertices_raw = vertices_raw;
     this->n_verts = n_verts;
     this->faces_raw = faces_raw;
     this->n_faces = n_faces;
+ 
+    DEBUG_PRINTLN("verts:");
+    for (int v = 0; v<n_verts; v++)
+        DEBUG_PRINTLN(vertices_raw[v*3] << ", " <<vertices_raw[v*3+1] << ", " <<vertices_raw[v*3+2]);
+    DEBUG_PRINTLN("faces:");
+    for (int f = 0; f<n_faces; f++)
+        DEBUG_PRINTLN(faces_raw[f*3] << ", " <<faces_raw[f*3+1] << ", " <<faces_raw[f*3+2]);
     
+    DEBUG_PRINTLN("");
     std::vector<Component> result;
     
     vert_part_idx = new int[n_verts];
@@ -104,15 +119,21 @@ int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned 
     face_part_idx = new int[n_faces];
     fill_array<int>(face_part_idx, n_faces, -1);
     
+    DEBUG_PRINTLN("");
     buildMap();
+    DEBUG_PRINTLN("");
     
     findNextUnassignedFace();
     
+    DEBUG_PRINTLN("");
     
     while (lastUnassignedFace < n_faces)
     {
+    DEBUG_PRINTLN("");
         getComponent(lastUnassignedFace);
+    DEBUG_PRINTLN("");
         findNextUnassignedFace();
+    DEBUG_PRINTLN("");
     }
     unsigned int n_components = lastComponentId;
     
@@ -129,16 +150,19 @@ int ConnectedComponentsComputation::getComponents(float* vertices_raw, unsigned 
         }
     }
     
+    DEBUG_PRINTLN("");
     for (unsigned int comp_id = 0; comp_id < n_components; comp_id++)
     {
         result.emplace_back();
     }
     
+    DEBUG_PRINTLN("");
     for (unsigned int v = 0; v < n_verts; v++)
     {
         result[vert_part_idx[v]].verts.emplace_back(vertices_raw + v*3);
     }
     
+    DEBUG_PRINTLN("");
     for (unsigned int f = 0; f < n_faces; f++)
     {
         FaceRaw face(faces_raw, f);
